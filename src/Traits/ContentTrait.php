@@ -22,7 +22,7 @@ trait ContentTrait
     public function getContent($disk, $path = null): array
     {
         $content = Storage::disk($disk)->listContents($path ?: '')->toArray();
-
+        // $content = array_reverse($content);
         $directories = $this->filterDir($disk, $content);
         $files = $this->filterFile($disk, $content);
 
@@ -191,6 +191,7 @@ trait ContentTrait
     protected function filterFile($disk, $content): array
     {
         // select only dir
+        $content = collect($content)->sortByDesc('lastModified')->toArray();
         $filesList = array_filter($content, fn($item) => $item['type'] === 'file');
 
         $files = array_map(function ($item) {
@@ -213,7 +214,6 @@ trait ContentTrait
         if ($this->configRepository->getAcl()) {
             return array_values($this->aclFilter($disk, $files));
         }
-
         return array_values($files);
     }
 
